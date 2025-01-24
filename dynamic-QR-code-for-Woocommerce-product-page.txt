@@ -1,0 +1,31 @@
+// Register a shortcode to generate QR code, show product url
+// add this code in Functions.php in child theme
+function generate_product_qr_code($atts) {
+    global $post;
+
+    if (!$post || $post->post_type !== 'product') {
+        return '';
+    }
+
+    $atts = shortcode_atts(
+        array(
+            'size' => '300', // Default size of QR code
+        ),
+        $atts,
+        'product_qr'
+    );
+
+    $product_url = get_permalink($post->ID);
+    if (!$product_url) {
+        return 'Invalid product URL.';
+    }
+
+    // Generate the QR code URL using qrserver API
+    $qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=' . intval($atts['size']) . 'x' . intval($atts['size']) . '&data=' . urlencode($product_url);
+
+    return '<div class="product-qr-code">
+                <img src="' . esc_url($qr_code_url) . '" alt="QR Code for ' . esc_attr(get_the_title($post->ID)) . '" />
+            </div>';
+}
+add_shortcode('product_qr', 'generate_product_qr_code');
+// add shortcode [product_qr size="200"] every where on your product detail page to display QR code
